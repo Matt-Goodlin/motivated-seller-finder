@@ -1,5 +1,5 @@
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
-import type { MapPin, Location } from "../../types";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import type { MapPin } from "../../types";
 
 const BAND_COLORS: Record<string, string> = {
   HIGH: "#ef4444",
@@ -10,34 +10,22 @@ const BAND_COLORS: Record<string, string> = {
 
 interface Props {
   pins: MapPin[];
-  location: Location | null;
   onSelectProperty: (id: string) => void;
 }
 
-function FlyTo({ location }: { location: Location | null }) {
-  const map = useMap();
-  if (location) {
-    map.flyTo([location.latitude, location.longitude], 12, { animate: true, duration: 1.2 });
-  }
-  return null;
-}
-
-export default function PropertyMap({ pins, location, onSelectProperty }: Props) {
-  const center: [number, number] = location
-    ? [location.latitude, location.longitude]
-    : [39.5, -98.35]; // center of US
+export default function PropertyMap({ pins, onSelectProperty }: Props) {
+  const center: [number, number] = [40.4406, -79.9959]; // Pittsburgh / western PA
 
   return (
     <MapContainer
       center={center}
-      zoom={location ? 12 : 4}
+      zoom={11}
       style={{ width: "100%", height: "100%", minHeight: 400 }}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
       />
-      <FlyTo location={location} />
       {pins.map((pin) => (
         <CircleMarker
           key={pin.id}

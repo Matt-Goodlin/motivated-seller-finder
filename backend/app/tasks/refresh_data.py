@@ -181,9 +181,12 @@ async def _execute_source_fetch(source_name: str, county: str, state: str, zip_c
 
             await db.commit()
 
-            # Trigger score recalculation
+            # Trigger score recalculation and geocoding
             from app.tasks.recalculate_scores import recalculate_all_scores
+            from app.tasks.geocode_properties import geocode_properties
             recalculate_all_scores.delay()
+            if created > 0:
+                geocode_properties.delay()
 
         except Exception as e:
             logger.error(f"Source {source_name} failed: {e}", exc_info=True)
@@ -200,13 +203,11 @@ def run_data_source_task(source_name: str, county: str, state: str, zip_code: st
 
 @celery_app.task(name="app.tasks.refresh_data.refresh_all_sources")
 def refresh_all_sources():
-    """Nightly task: refresh all enabled sources for the active location."""
-    # Import active location from Redis in production; use env fallback here
-    county = settings.config.get("active_county", "") if hasattr(settings, "config") else ""
-    state = settings.config.get("active_state", "") if hasattr(settings, "config") else ""
-    if not county or not state:
-        logger.warning("No active location set; skipping nightly refresh.")
-        return
-
-    for source_class in ALL_SOURCES:
-        run_data_source_task.delay(source_class.name, county, state)
+    """Nightly task: refresh all enabled sources for the target counties."""
+    target_counties = [
+        ("Allegheny", "PA"),
+        ("Westmoreland", "PA"),
+    ]
+    for county, state in target_counties:
+        for source_class in ALL_SOURCES:
+            run_data_source_task.delay(source_class.name, county, state)

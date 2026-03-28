@@ -8,7 +8,7 @@ celery_app = Celery(
     "motivated_seller",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.refresh_data", "app.tasks.recalculate_scores"],
+    include=["app.tasks.refresh_data", "app.tasks.recalculate_scores", "app.tasks.geocode_properties"],
 )
 
 celery_app.conf.update(
