@@ -9,10 +9,17 @@ logger = logging.getLogger(__name__)
 
 def _run_async(coro):
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         return loop.run_until_complete(coro)
     finally:
+        from app.database import engine
+        try:
+            loop.run_until_complete(engine.dispose())
+        except Exception:
+            pass
         loop.close()
+        asyncio.set_event_loop(None)
 
 
 async def _recalculate():

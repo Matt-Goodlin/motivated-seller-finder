@@ -102,6 +102,7 @@ async def trigger_data_source_run(
     source_name: str,
     county: str,
     state: str,
+    zip_code: str = "",
     _admin: User = Depends(require_admin),
 ):
     """Trigger a manual data fetch for the given source and location."""
@@ -109,8 +110,7 @@ async def trigger_data_source_run(
     if not source_class:
         raise HTTPException(status_code=404, detail=f"Data source '{source_name}' not found")
 
-    # Dispatch to Celery
-    task = run_data_source_task.delay(source_name, county, state)
+    task = run_data_source_task.delay(source_name, county, state, zip_code or None)
     return {"message": f"Data fetch started for {source_name}", "task_id": task.id}
 
 

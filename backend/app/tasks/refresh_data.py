@@ -18,13 +18,22 @@ settings = get_settings()
 def _run_async(coro):
     """Run async coroutine from sync Celery task."""
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         return loop.run_until_complete(coro)
     finally:
+        # Dispose asyncpg connection pool before closing the loop to prevent
+        # "attached to a different loop" errors on subsequent tasks.
+        from app.database import engine
+        try:
+            loop.run_until_complete(engine.dispose())
+        except Exception:
+            pass
         loop.close()
+        asyncio.set_event_loop(None)
 
 
-async def _execute_source_fetch(source_name: str, county: str, state: str):
+async def _execute_source_fetch(source_name: str, county: str, state: str, zip_code: str | None = None):
     from app.database import AsyncSessionLocal
     from app.models.property import Property, MarketStatus
     from app.models.indicator import PropertyIndicator
@@ -47,7 +56,10 @@ async def _execute_source_fetch(source_name: str, county: str, state: str):
             return
 
         api_key = config.api_key_encrypted if config else None
-        source = source_class(api_key=api_key)
+        source_config = dict(config.config_json) if config and config.config_json else {}
+        if zip_code:
+            source_config["zip_code"] = zip_code
+        source = source_class(api_key=api_key, config=source_config)
 
         if not source.is_configured():
             logger.warning(f"Source {source_name} not configured, skipping.")
@@ -182,8 +194,8 @@ async def _execute_source_fetch(source_name: str, county: str, state: str):
 
 
 @celery_app.task(name="app.tasks.refresh_data.run_data_source_task")
-def run_data_source_task(source_name: str, county: str, state: str):
-    _run_async(_execute_source_fetch(source_name, county, state))
+def run_data_source_task(source_name: str, county: str, state: str, zip_code: str | None = None):
+    _run_async(_execute_source_fetch(source_name, county, state, zip_code))
 
 
 @celery_app.task(name="app.tasks.refresh_data.refresh_all_sources")
