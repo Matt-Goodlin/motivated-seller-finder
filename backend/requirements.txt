@@ -1,0 +1,52 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# Database
+sqlalchemy==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+geoalchemy2==0.15.2
+psycopg2-binary==2.9.10
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.18
+
+# Task queue
+celery==5.4.0
+redis==5.2.1
+kombu==5.4.2
+
+# HTTP client (for data source fetching)
+httpx==0.28.1
+aiohttp==3.11.11
+beautifulsoup4==4.12.3
+lxml==5.3.0
+
+# Data processing
+pandas==2.2.3
+numpy==2.2.1
+
+# Geocoding / geo
+geopy==2.4.1
+shapely==2.0.6
+
+# Rate limiting
+slowapi==0.1.9
+
+# Config / validation
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+
+# Security headers
+secure==0.3.0
+
+# Scheduling (for Celery beat)
+celery[redis]==5.4.0
+
+# Utilities
+tenacity==9.0.0
+python-dateutil==2.9.0
