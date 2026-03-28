@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch(domain:api.developer.attomdata.com)",
-      "WebFetch(domain:batchdata.io)"
-    ]
-  }
-}
