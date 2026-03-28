@@ -12,6 +12,7 @@ psycopg2-binary==2.9.10
 # Auth
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-multipart==0.0.18
 
 # Task queue
@@ -37,12 +38,11 @@ shapely==2.0.6
 slowapi==0.1.9
 
 # Config / validation
-pydantic==2.10.4
+pydantic[email]==2.10.4
 pydantic-settings==2.7.0
 python-dotenv==1.0.1
 
-# Security headers
-secure==0.3.0
+# (security headers applied directly via middleware)
 
 # Scheduling (for Celery beat)
 celery[redis]==5.4.0

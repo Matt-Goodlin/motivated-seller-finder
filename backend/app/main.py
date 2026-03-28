@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-import secure
 
 from app.config import get_settings
 from app.api.auth import router as auth_router
@@ -42,24 +41,19 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
-# ─── Security headers middleware ──────────────────────────────────────────────
-secure_headers = secure.Secure(
-    hsts=secure.StrictTransportSecurity().max_age(31536000).include_subdomains(),
-    xfo=secure.XFrameOptions().deny(),
-    csp=secure.ContentSecurityPolicy()
-        .default_src("'self'")
-        .script_src("'self'")
-        .style_src("'self'", "'unsafe-inline'")
-        .img_src("'self'", "data:", "https://*.tile.openstreetmap.org", "https://maps.googleapis.com"),
-    xcto=secure.XContentTypeOptions(),
-    referrer=secure.ReferrerPolicy().no_referrer(),
-)
+SECURITY_HEADERS = {
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "geolocation=(), microphone=()",
+}
 
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
-    secure_headers.framework.fastapi(response)
+    for key, value in SECURITY_HEADERS.items():
+        response.headers[key] = value
     return response
 
 
